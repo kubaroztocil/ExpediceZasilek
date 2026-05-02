@@ -1,63 +1,65 @@
-type dopis = {
+export type dopis = {
     id: number;
-    typ: string; // může být pouze "dopis"
+    typ: string;
     nazev: string;
     cena: number;
 }
-type balik = {
+export type balik = {
   id: number;
-  typ: string; // může být "XS_zasilka", "S_zasilka", "M_zasilka", "L_zasilka", "XL_zasilka" nebo "XXL_zasilka"
+  typ: string;
   nazev: string;
   cena: number;
   MaxVaha: number;
+  Size: number;
 };
 
-const menu: (dopis|balik)[] = [
+export const menu: (dopis|balik)[] = [
   { 
-    id: 100, 
+    id: 1, 
     typ: "dopis", 
     nazev: "Dopis", 
     cena: 45
   },
   { 
-    id: 200, 
+    id: 2, 
     typ: "XS_zasilka", 
-    nazev: "Zásilka", 
+    nazev: "XSZásilka", 
     cena: 50,
-    MaxVaha: 0.5
+    MaxVaha: 0.5,
+    Size: 1
   },
   {
-    id: 300,
+    id: 3,
     typ: "S_zasilka",
-    nazev: "Zásilka",
+    nazev: "S Zásilka",
     cena: 75,
     MaxVaha: 1
   },
   {
-    id: 400,
+    id: 4,
     typ: "M_zasilka",
-    nazev: "Zásilka",
+    nazev: "M Zásilka",
     cena: 125,
     MaxVaha: 5
   },
   {
-    id: 500,
+    id: 5,
     typ: "L_zasilka",
-    nazev: "Zásilka",
+    nazev: "L Zásilka",
     cena: 175,
     MaxVaha: 10
   },
   {
-    id: 600,
+    id: 6,
     typ: "XL_zasilka",
-    nazev: "Zásilka",
+    nazev: "XL Zásilka",
     cena: 250,
     MaxVaha: 20
   },
   {
-    id: 700,
+    id: 7,
     typ: "XXL_zasilka",
-    nazev: "Zásilka",
+    nazev: "XXL Zásilka",
     cena: 350,
     MaxVaha: 35
   }
