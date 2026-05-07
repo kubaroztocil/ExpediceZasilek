@@ -1,3 +1,4 @@
+import { menu } from "./data.js"; // import data.js
 class Zasilka {
     id;
     typ;
@@ -22,15 +23,17 @@ class DopisZasilka extends Zasilka {
 class BalikZasilka extends Zasilka {
     maxVaha;
     krehky;
-    constructor(id, typ, nazev, cena, maxVaha, mnozstvi = 1, krehky = false) {
+    maxObjem;
+    constructor(id, typ, nazev, cena, maxVaha, maxObjem, mnozstvi = 1, krehky = false) {
         super(id, typ, nazev, cena, mnozstvi);
         this.maxVaha = maxVaha;
+        this.maxObjem = maxObjem;
         this.krehky = krehky;
     }
     vypocitejCenu() {
         let priplatek = 0;
         if (this.krehky === true) {
-            priplatek = 50; // příplatek za křehké zboží
+            priplatek = 25 * this.maxVaha; // příplatek za křehké zboží
         }
         else {
             priplatek = 0; // bez příplatku
@@ -38,11 +41,8 @@ class BalikZasilka extends Zasilka {
         return (this.cena + priplatek) * this.mnozstvi;
     }
 }
-// Test: vytvoření dopisu a balíku
-const dopis = new DopisZasilka(1, "dopis", "Dopis", 45, 2); // 2 dopisy
-console.log("Cena za dopisy:", dopis.vypocitejCenu());
-const balik1 = new BalikZasilka(2, "S_zasilka", "Automobil", 75, 1, 1, false); // nekřehký balík
-console.log(`Cena za ${balik1.nazev}: ${balik1.vypocitejCenu()}`);
-const balik2 = new BalikZasilka(3, "M_zasilka", "M Zásilka", 125, 5, 1, true); // křehký balík
-console.log(`Cena za ${balik2.nazev}: ${balik2.vypocitejCenu()}`);
-export {};
+console.log(menu); // test načtení dat z data.js
+new DopisZasilka(1, 'dopis', 'Standardní dopis', 30, 2);
+console.log(DopisZasilka);
+new BalikZasilka(3, 'balik', 'Malý balík', 120, 2, 10000, 1, true);
+console.log(BalikZasilka);

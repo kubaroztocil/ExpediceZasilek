@@ -1,67 +1,17 @@
-export type dopis = {
+export interface PolozkaMenu {
     id: number;
-    typ: string;
+    typ: 'dopis' | 'balik';
     nazev: string;
     cena: number;
+    maxVaha?: number; // v kg
+    maxObjem?: number; // v cm3
 }
-export type balik = {
-  id: number;
-  typ: string;
-  nazev: string;
-  cena: number;
-  MaxVaha: number;
-  Size: number;
-};
 
-export const menu: (dopis|balik)[] = [
-  { 
-    id: 1, 
-    typ: "dopis", 
-    nazev: "Dopis", 
-    cena: 45
-  },
-  { 
-    id: 2, 
-    typ: "XS_zasilka", 
-    nazev: "XSZásilka", 
-    cena: 50,
-    MaxVaha: 0.5,
-    Size: 1
-  },
-  {
-    id: 3,
-    typ: "S_zasilka",
-    nazev: "S Zásilka",
-    cena: 75,
-    MaxVaha: 1
-  },
-  {
-    id: 4,
-    typ: "M_zasilka",
-    nazev: "M Zásilka",
-    cena: 125,
-    MaxVaha: 5
-  },
-  {
-    id: 5,
-    typ: "L_zasilka",
-    nazev: "L Zásilka",
-    cena: 175,
-    MaxVaha: 10
-  },
-  {
-    id: 6,
-    typ: "XL_zasilka",
-    nazev: "XL Zásilka",
-    cena: 250,
-    MaxVaha: 20
-  },
-  {
-    id: 7,
-    typ: "XXL_zasilka",
-    nazev: "XXL Zásilka",
-    cena: 350,
-    MaxVaha: 35
-  }
+export const menu: PolozkaMenu[] = [
+    { id: 1, typ: 'dopis', nazev: 'Standardní dopis', cena: 30 },
+    { id: 2, typ: 'dopis', nazev: 'Doporučený dopis', cena: 50 },
+    { id: 3, typ: 'balik', nazev: 'Malý balík', cena: 120, maxVaha: 2, maxObjem: 10000 }, // např. 20x25x20 cm
+    { id: 4, typ: 'balik', nazev: 'Střední balík', cena: 150, maxVaha: 5, maxObjem: 30000 }, // např. 30x30x33 cm
+    { id: 5, typ: 'balik', nazev: 'Velký balík', cena: 200, maxVaha: 10, maxObjem: 100000 }, // např. 50x50x40 cm
 ];
 
