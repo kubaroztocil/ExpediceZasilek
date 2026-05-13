@@ -11,3 +11,7 @@ export const menu = [
     { id: 5, typ: 'balik-velky', nazev: 'Velký balík', cena: 200, maxVaha: 10, maxObjem: 100000 },
     { id: 6, typ: 'balik-nadmerny', nazev: 'Nadměrný balík', cena: 350, maxVaha: 1000, maxObjem: 10000000 }
 ];
+export const vozidla = [
+    { id: 1, nazev: 'Dodávka', maxObjem: 1000000 },
+    { id: 2, nazev: 'Malé auto', maxObjem: 300000 }
+];

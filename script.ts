@@ -1,4 +1,37 @@
-import {menu, maxLimity} from "./data.js"; // import data.js
+import {menu, maxLimity, vozidla} from "./data.js"; // import data.js
+// Vozidlo
+class Vozidlo {
+    id: number;
+    nazev: string;
+    maxObjem: number; // cm3
+    zaplnenyObjem: number = 0;
+    zasilky: Zasilka[] = [];
+
+    constructor(id: number, nazev: string, maxObjem: number) {
+        this.id = id;
+        this.nazev = nazev;
+        this.maxObjem = maxObjem;
+    }
+
+    // pridani zasilky do vozidla, kontrola objemu
+    pridatZasilku(z: Zasilka): { ok: boolean; reason?: string } {
+        let objm = 0;
+        if (z instanceof Balik) objm = z.objem;
+        // dopisy nemaji objem
+
+        if (this.zaplnenyObjem + objm > this.maxObjem) {
+            return { ok: false, reason: 'Nedostatek volného objemu ve vozidle' };
+        }
+
+        this.zasilky.push(z);
+        this.zaplnenyObjem += objm;
+        return { ok: true };
+    }
+
+    zbyvajiciObjem(): number {
+        return Math.max(0, this.maxObjem - this.zaplnenyObjem);
+    }
+}
 // Základní třída společných vlastností
 abstract class Zasilka {
     id: number;
@@ -111,5 +144,41 @@ class Balik extends Zasilka {
     vypocitejCenu(): number {
         return this.cena * this.mnozstvi;
     }
+}
 
+//funkce pridani dopisu
+function pridatDopis(nazev: string, druh: 'dopis' | 'doporuceny', mnozstvi: number): Dopis {
+    const typ = druh === 'dopis' ? 'dopis' : 'doporuceny';
+    const pol = menu.find(m => m.typ === typ);
+    if (!pol) throw new Error('Položka v menu nenalezena');
+    return new Dopis(pol.id, nazev, pol.cena, mnozstvi);
+}
+
+// funkce pridani baliku
+function pridatBalik(nazev: string, sirka: number, vyska: number, hloubka: number, vaha: number, mnozstvi: number): Balik | null {
+    const id = 100 + Math.floor(Math.random() * 900);
+    // před vytvořením instance zkontrolujeme globální limity
+    const objem = Math.round(sirka * vyska * hloubka);
+    if (vaha > maxLimity.maxVahaBalik || objem > maxLimity.maxObjemBalik) {
+        console.warn('Balík překračuje globální limity - nebude vytvořen.');
+        return null;
+    }
+    return new Balik(id, nazev, sirka, vyska, hloubka, vaha, mnozstvi);
+}
+
+const b = pridatBalik('Obrovsky', 50, 20, 10, 20, 1);
+if (b === null) {
+    console.log('Balík nebyl vytvořen — překročen globální limit.');
+} else {
+    console.log(b.isTooLarge, b.kategorie, b.vypocitejCenu());
+
+    // vytvoříme vozidlo podle první konfigurace v data.ts a zkusíme do něj přidat zásilku
+    const vozidlo = vozidla[0];
+    const v = new Vozidlo(vozidlo.id, vozidlo.nazev, vozidlo.maxObjem);
+    const vysledek = v.pridatZasilku(b);
+    if (!vysledek.ok) {
+        console.log('Nepodařilo se přidat do vozidla:', vysledek.reason, 'volný objem:', v.zbyvajiciObjem());
+    } else {
+        console.log('Přidáno do vozidla', v.nazev, 'volný objem:', v.zbyvajiciObjem());
+    }
 }

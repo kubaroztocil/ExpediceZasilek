@@ -20,3 +20,14 @@ export const menu: PolozkaMenu[] = [
     { id: 5, typ: 'balik-velky', nazev: 'Velký balík', cena: 200, maxVaha: 10, maxObjem: 100000 },
     { id: 6, typ: 'balik-nadmerny', nazev: 'Nadměrný balík', cena: 350, maxVaha: 1000, maxObjem: 10000000 }
 ];
+// konfig vozidel
+export interface vozidloConfig {
+    id: number;
+    nazev: string;
+    maxObjem: number; // v cm3
+}
+
+export const vozidla: vozidloConfig[] = [
+    { id: 1, nazev: 'Dodávka', maxObjem: 1000000 },
+    { id: 2, nazev: 'Malé auto', maxObjem: 300000 }
+];
