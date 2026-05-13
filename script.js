@@ -1,67 +1,103 @@
+import { menu, maxLimity } from "./data.js"; // import data.js
+// Základní třída společných vlastností
 class Zasilka {
     id;
     typ;
     nazev;
-    cena;
+    cena; // cena za jeden kus
     mnozstvi;
-    constructor(id, typ, nazev, cena, mnozstvi) {
+    constructor(id, typ, nazev, cena, mnozstvi = 1) {
+        if (!nazev || nazev.trim() === "")
+            throw new Error("Název nesmí být prázdný"); //chybobé hlášky
+        if (cena < 0)
+            throw new Error("Cena nesmí být záporná");
+        if (mnozstvi <= 0)
+            throw new Error("Množství musí být kladné číslo");
         this.id = id;
         this.typ = typ;
         this.nazev = nazev;
         this.cena = cena;
-        this.mnozstvi = mnozstvi; // Výchozí množství
+        this.mnozstvi = Math.round(mnozstvi); // zaokrouhlení na celé číslo
     }
 }
-// Potomek pro dopis
-class DopisZasilka extends Zasilka {
+// Dopis
+class Dopis extends Zasilka {
+    constructor(id, nazev, cena, mnozstvi = 1) {
+        super(id, 'dopis', nazev, cena, mnozstvi);
+    }
     vypocitejCenu() {
         return this.cena * this.mnozstvi;
     }
 }
-// Potomek pro balík
-class BalikZasilka extends Zasilka {
-    maxVaha;
-    Vaha;
-    krehky;
-    maxObjem;
-    constructor(id, typ, nazev, cena, maxVaha, Vaha, maxObjem, mnozstvi = 1, krehky = false) {
-        if (Vaha > maxVaha) {
-            throw new Error(`Váha ${Vaha}kg překračuje limit ${maxVaha}kg!`);
+// Balík
+class Balik extends Zasilka {
+    sirka; // cm
+    vyska; // cm
+    hloubka; // cm
+    vaha; // kg
+    objem; // cm3
+    kategorie; // hledání z menu
+    isTooLarge = false; // true pokud překročí globální limity
+    constructor(id, nazev, sirka, vyska, hloubka, vaha, mnozstvi) {
+        super(id, 'balik', nazev, 0, mnozstvi);
+        if (sirka <= 0 || vyska <= 0 || hloubka <= 0)
+            throw new Error('Rozměry musí být kladné'); // kontrola rozměrů
+        if (vaha <= 0)
+            throw new Error('Váha musí být kladná'); // kontrola váhy
+        this.sirka = sirka; // cm
+        this.vyska = vyska;
+        this.hloubka = hloubka;
+        this.vaha = vaha; // kg
+        this.objem = Math.round(sirka * vyska * hloubka); //spočítáme objem z rozměrů (cm3)
+        if (this.vaha > maxLimity.maxVahaBalik || this.objem > maxLimity.maxObjemBalik) { //vetsi než max limity
+            this.isTooLarge = true;
+            this.kategorie = 'prilis-velky';
+            this.cena = 0;
+            console.warn('Zásilka překračuje povolený maximální rozměr nebo váhu (označeno jako příliš velké).');
+            return; // ukonceni konstruktoru
         }
-        super(id, typ, nazev, cena, mnozstvi);
-        this.maxVaha = maxVaha;
-        this.Vaha = Vaha;
-        this.maxObjem = maxObjem;
-        this.krehky = krehky;
+        this.kategorie = this.urciKategorii(); // určujeme kategorii
+        const kateg = menu.find(kat => kat.typ === this.kategorie); // podle kategorie cena z menu
+        if (kateg)
+            this.cena = kateg.cena;
+    }
+    urciKategorii() {
+        const maly = menu.find(m => m.typ === 'balik-maly');
+        const stredni = menu.find(m => m.typ === 'balik-stredni');
+        const velky = menu.find(m => m.typ === 'balik-velky');
+        // urcovani podl vahy
+        const maxVahaMaly = maly?.maxVaha ?? Infinity;
+        const maxVahaStredni = stredni?.maxVaha ?? Infinity;
+        const maxVahaVelky = velky?.maxVaha ?? Infinity;
+        if (this.vaha > maxVahaVelky) {
+            const nad = menu.find(m => m.typ === 'balik-nadmerny');
+            const maxVahaNad = nad?.maxVaha ?? Infinity;
+            if (this.vaha > maxVahaNad)
+                return 'prilis-velky';
+            return 'balik-nadmerny';
+        }
+        if (this.vaha > maxVahaStredni)
+            return 'balik-velky';
+        if (this.vaha > maxVahaMaly)
+            return 'balik-stredni';
+        // podle objemu
+        const maxObjemMaly = maly?.maxObjem ?? Infinity;
+        const maxObjemStredni = stredni?.maxObjem ?? Infinity;
+        const maxObjemVelky = velky?.maxObjem ?? Infinity;
+        if (this.objem <= maxObjemMaly)
+            return 'balik-maly';
+        if (this.objem <= maxObjemStredni)
+            return 'balik-stredni';
+        if (this.objem <= maxObjemVelky)
+            return 'balik-velky';
+        // nadmerny balik
+        const nadObj = menu.find(m => m.typ === 'balik-nadmerny');
+        const maxObjemNad = nadObj?.maxObjem ?? Infinity;
+        if (this.objem > maxObjemNad)
+            return 'prilis-velky';
+        return 'balik-nadmerny';
     }
     vypocitejCenu() {
-        let priplatek = 0;
-        if (this.krehky === true) {
-            priplatek = 25 * this.maxVaha; // příplatek za křehké zboží
-        }
-        else {
-            priplatek = 0; // bez příplatku
-        }
-        return (this.cena + priplatek) * this.mnozstvi;
+        return this.cena * this.mnozstvi;
     }
 }
-class BalikZasilkaNadmerny extends BalikZasilka {
-    constructor(id, typ, nazev, cena, maxVaha, Vaha, maxObjem, mnozstvi = 1, krehky = false) {
-        // Zavoláme super s maxVaha jako váhu, aby prošla validace bez limitu
-        super(id, typ, nazev, cena, maxVaha, maxVaha, maxObjem, mnozstvi, krehky);
-        // Poté nastavíme skutečnou váhu (neomezeně)
-        this.Vaha = Vaha;
-    }
-    vypocitejCenu() {
-        let priplatek = 0;
-        if (this.krehky === true) {
-            priplatek = 25 * this.maxVaha; // příplatek za křehké zboží
-        }
-        const nadmernyPriplatek = 50; // příplatek za nadměrný balík
-        return (this.cena + priplatek + (this.Vaha * nadmernyPriplatek)) * this.mnozstvi;
-    }
-}
-new DopisZasilka(1, 'dopis', 'Standardní dopis', 40, 2);
-new BalikZasilka(3, 'balik', 'Malý balík', 90, 2, 1.5, 10000, 1, true);
-new BalikZasilkaNadmerny(3, 'balik', 'Nadměrný balík', 90, 2, 100, 10000, 1, true);
-export {};
