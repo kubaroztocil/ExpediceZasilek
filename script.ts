@@ -37,11 +37,11 @@ abstract class Zasilka {
     id: number;
     typ: string;
     nazev: string;
-    cena: number; // cena za jeden kus
+    cena: number; // za 1 kus
     mnozstvi: number;
 
     constructor(id: number, typ: string, nazev: string, cena: number, mnozstvi = 1) {
-        if (!nazev || nazev.trim() === "") throw new Error("Název nesmí být prázdný"); //chybobé hlášky
+        if (!nazev || nazev.trim() == "") throw new Error("Název nesmí být prázdný"); //chybobé hlášky
         if (cena < 0) throw new Error("Cena nesmí být záporná");
         if (mnozstvi <= 0) throw new Error("Množství musí být kladné číslo");
         this.id = id;
@@ -51,7 +51,7 @@ abstract class Zasilka {
         this.mnozstvi = Math.round(mnozstvi); // zaokrouhlení na celé číslo
     }
 
-    // každá zásilka musí umět spočítat svou cenu
+    // pocitani ceny abstraktni
     abstract vypocitejCenu(): number;
 }
 
@@ -70,14 +70,15 @@ class Dopis extends Zasilka {
 // Balík
 class Balik extends Zasilka {
     sirka: number; // cm
-    vyska: number; // cm
-    hloubka: number; // cm
+    vyska: number;
+    hloubka: number;
     vaha: number; // kg
     objem: number; // cm3
     kategorie: string; // hledání z menu
-    isTooLarge: boolean = false; // true pokud překročí globální limity
+    krehka: boolean = false; // krehka
+    isTooLarge: boolean = false; // true pokud překročí limity
 
-    constructor(id: number, nazev: string, sirka: number, vyska: number, hloubka: number, vaha: number, mnozstvi: number) {
+    constructor(id: number, nazev: string, sirka: number, vyska: number, hloubka: number, vaha: number, mnozstvi: number, krehka: boolean = false) {
 
         super(id, 'balik', nazev, 0, mnozstvi);
 
@@ -88,6 +89,7 @@ class Balik extends Zasilka {
         this.vyska = vyska;     
         this.hloubka = hloubka; 
         this.vaha = vaha;       // kg
+        this.krehka = krehka;
 
         
         this.objem = Math.round(sirka * vyska * hloubka); //spočítáme objem z rozměrů (cm3)
@@ -118,8 +120,10 @@ class Balik extends Zasilka {
         if (this.vaha > maxVahaVelky) {
             const nad = menu.find(m => m.typ === 'balik-nadmerny');
             const maxVahaNad = nad?.maxVaha ?? Infinity;
-            if (this.vaha > maxVahaNad) return 'prilis-velky';
-            return 'balik-nadmerny';
+             if (this.vaha > maxVahaNad) {
+                    return 'prilis-velky';
+             }
+        return 'balik-nadmerny';
         }
         if (this.vaha > maxVahaStredni) return 'balik-velky';
         if (this.vaha > maxVahaMaly) return 'balik-stredni';
@@ -142,14 +146,17 @@ class Balik extends Zasilka {
     }
 
     vypocitejCenu(): number {
-        return this.cena * this.mnozstvi;
+        if (this.krehka == true)
+           return this.cena = (this.cena * 1.3)*this.mnozstvi; // přirážka 30% pro křehké zboží
+
+        else return this.cena * this.mnozstvi;
     }
 }
 
 //funkce pridani dopisu
 function pridatDopis(nazev: string, druh: 'dopis' | 'doporuceny', mnozstvi: number): Dopis {
-    const typ = druh === 'dopis' ? 'dopis' : 'doporuceny';
-    const pol = menu.find(m => m.typ === typ);
+    const typ = druh ==  'dopis' ? 'dopis' : 'doporuceny';
+    const pol = menu.find(m => m.typ == typ);
     if (!pol) throw new Error('Položka v menu nenalezena');
     return new Dopis(pol.id, nazev, pol.cena, mnozstvi);
 }
@@ -166,13 +173,16 @@ function pridatBalik(nazev: string, sirka: number, vyska: number, hloubka: numbe
     return new Balik(id, nazev, sirka, vyska, hloubka, vaha, mnozstvi);
 }
 
+const bal = new Balik(1, 'Testovací balík', 50, 20, 10, 10, 1);
+console.log(bal);
+
 const b = pridatBalik('Obrovsky', 50, 20, 10, 20, 1);
 if (b === null) {
     console.log('Balík nebyl vytvořen — překročen globální limit.');
 } else {
     console.log(b.isTooLarge, b.kategorie, b.vypocitejCenu());
 
-    // vytvoříme vozidlo podle první konfigurace v data.ts a zkusíme do něj přidat zásilku
+    // vytvoreni vozidla
     const vozidlo = vozidla[0];
     const v = new Vozidlo(vozidlo.id, vozidlo.nazev, vozidlo.maxObjem);
     const vysledek = v.pridatZasilku(b);
