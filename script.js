@@ -130,10 +130,9 @@ class Balik extends Zasilka {
         return 'balik-nadmerny';
     }
     vypocitejCenu() {
-        if (this.krehka == true)
-            return this.cena = (this.cena * 1.3) * this.mnozstvi; // přirážka 30% pro křehké zboží
-        else
-            return this.cena * this.mnozstvi;
+        const perUnit = this.cena;
+        const multiplier = this.krehka ? 1.3 : 1;
+        return perUnit * multiplier * this.mnozstvi;
     }
 }
 //funkce pridani dopisu
@@ -145,7 +144,7 @@ function pridatDopis(nazev, druh, mnozstvi) {
     return new Dopis(pol.id, nazev, pol.cena, mnozstvi);
 }
 // funkce pridani baliku
-function pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi) {
+function pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehka = false) {
     const id = 100 + Math.floor(Math.random() * 900);
     // před vytvořením instance zkontrolujeme globální limity
     const objem = Math.round(sirka * vyska * hloubka);
@@ -153,9 +152,9 @@ function pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi) {
         console.warn('Balík překračuje globální limity - nebude vytvořen.');
         return null;
     }
-    return new Balik(id, nazev, sirka, vyska, hloubka, vaha, mnozstvi);
+    return new Balik(id, nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehka);
 }
-const bal = new Balik(1, 'Testovací balík', 50, 20, 10, 10, 1);
+const bal = new Balik(1, 'Testovací balík', 50, 20, 10, 10, 1, true);
 console.log(bal);
 const b = pridatBalik('Obrovsky', 50, 20, 10, 20, 1);
 if (b === null) {
