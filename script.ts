@@ -31,6 +31,47 @@ class Vozidlo {
     zbyvajiciObjem(): number {
         return Math.max(0, this.maxObjem - this.zaplnenyObjem);
     }
+
+    // Celková cena všech zásilek ve vozidle
+    getCelkovaCena(): number {
+        return this.zasilky.reduce((suma, z) => suma + z.vypocitejCenu(), 0);
+    }
+
+    // Procenta využití objemu
+    getProcenta(): number {
+        if (this.maxObjem === 0) return 0;
+        return Math.round((this.zaplnenyObjem / this.maxObjem) * 100);
+    }
+
+    // Počet všech kusů (jednotlivých balíků/dopisů)
+    getPocetKusu(): number {
+        return this.zasilky.reduce((suma, z) => suma + z.mnozstvi, 0);
+    }
+
+    // Odebrání zásilky podle ID
+    odebratZasilku(id: number): { ok: boolean; reason?: string; zasilka?: Zasilka } {
+        const index = this.zasilky.findIndex(z => z.id === id);
+        if (index === -1) {
+            return { ok: false, reason: 'Zásilka nenalezena' };
+        }
+        const zasilka = this.zasilky[index];
+        let objm = 0;
+        if (zasilka instanceof Balik) objm = zasilka.objem;
+        this.zasilky.splice(index, 1);
+        this.zaplnenyObjem -= objm;
+        return { ok: true, zasilka };
+    }
+
+    // Vyprázdnit vozidlo
+    vyprazdnit(): void {
+        this.zasilky = [];
+        this.zaplnenyObjem = 0;
+    }
+
+    // Info o vozidlu
+    getInfo(): string {
+        return `${this.nazev} (${this.getPocetKusu()} kusů, ${this.getProcenta()}% obsazeno, cena: ${this.getCelkovaCena()} Kč)`;
+    }
 }
 // Základní třída společných vlastností
 abstract class Zasilka {
@@ -53,6 +94,11 @@ abstract class Zasilka {
 
     // pocitani ceny abstraktni
     abstract vypocitejCenu(): number;
+
+    // Info o zásilce
+    getInfo(): string {
+        return `${this.nazev} (${this.mnozstvi}x za ${this.cena} Kč = ${this.vypocitejCenu()} Kč)`;
+    }
 }
 
 // Dopis
@@ -63,6 +109,10 @@ class Dopis extends Zasilka {
 
     vypocitejCenu(): number {
         return this.cena * this.mnozstvi;
+    }
+
+    getInfo(): string {
+        return `Dopis: ${super.getInfo()}`;
     }
 }
 
@@ -107,48 +157,47 @@ class Balik extends Zasilka {
         if (kateg) this.cena = kateg.cena;
     }
 
-    urciKategorii(): string { //limity z menu pro kazdou velikost baliku
+    urciKategorii(): string {
         const maly = menu.find(m => m.typ === 'balik-maly');
         const stredni = menu.find(m => m.typ === 'balik-stredni');
         const velky = menu.find(m => m.typ === 'balik-velky');
+        const nadmerny = menu.find(m => m.typ === 'balik-nadmerny');
 
-        // urcovani podl vahy
         const maxVahaMaly = maly?.maxVaha ?? Infinity;
         const maxVahaStredni = stredni?.maxVaha ?? Infinity;
         const maxVahaVelky = velky?.maxVaha ?? Infinity;
+        const maxVahaNad = nadmerny?.maxVaha ?? Infinity;
 
-        if (this.vaha > maxVahaVelky) {
-            const nad = menu.find(m => m.typ === 'balik-nadmerny');
-            const maxVahaNad = nad?.maxVaha ?? Infinity;
-             if (this.vaha > maxVahaNad) {
-                    return 'prilis-velky';
-             }
-        return 'balik-nadmerny';
-        }
+        // Podle váhy určíme kategorii
+        if (this.vaha > maxVahaNad) return 'prilis-velky';
+        if (this.vaha > maxVahaVelky) return 'balik-nadmerny';
         if (this.vaha > maxVahaStredni) return 'balik-velky';
         if (this.vaha > maxVahaMaly) return 'balik-stredni';
 
-        // podle objemu
+        // Pokud váha OK, kontrolujeme objem
         const maxObjemMaly = maly?.maxObjem ?? Infinity;
         const maxObjemStredni = stredni?.maxObjem ?? Infinity;
         const maxObjemVelky = velky?.maxObjem ?? Infinity;
+        const maxObjemNad = nadmerny?.maxObjem ?? Infinity;
 
-        if (this.objem <= maxObjemMaly) return 'balik-maly';
-        if (this.objem <= maxObjemStredni) return 'balik-stredni';
-        if (this.objem <= maxObjemVelky) return 'balik-velky';
-
-        // nadmerny balik
-        const nadObj = menu.find(m => m.typ === 'balik-nadmerny');
-        const maxObjemNad = nadObj?.maxObjem ?? Infinity;
         if (this.objem > maxObjemNad) return 'prilis-velky';
+        if (this.objem > maxObjemVelky) return 'balik-nadmerny';
+        if (this.objem > maxObjemStredni) return 'balik-velky';
+        if (this.objem > maxObjemMaly) return 'balik-stredni';
 
-        return 'balik-nadmerny';
+        return 'balik-maly';
     }
 
     vypocitejCenu(): number {
         const perUnit = this.cena;
         const multiplier = this.krehka ? 1.3 : 1;
         return perUnit * multiplier * this.mnozstvi;
+    }
+
+    getInfo(): string {
+        const krehkyInfo = this.krehka ? ' (KŘEHKÝ +30%)' : '';
+        const rozmerInfo = `${this.sirka}x${this.vyska}x${this.hloubka}cm, ${this.vaha}kg`;
+        return `Balík: ${this.nazev} [${rozmerInfo}${krehkyInfo}] - kategorie: ${this.kategorie}, celkem: ${this.vypocitejCenu()} Kč`;
     }
 }
 
