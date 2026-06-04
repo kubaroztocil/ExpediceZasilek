@@ -1,12 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Expedice zasilek</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1>Expedice zasilek</h1>
+
+    <h2>Pridat dopis</h2>
+    <form id="dopisForm">
+        <label for="dopisNazev">Nazev:</label>
+        <input id="dopisNazev" type="text" required>
+
+        <label for="dopisDruh">Druh:</label>
+        <select id="dopisDruh">
+            <option value="dopis">Dopis</option>
+            <option value="doporuceny">Doporuceny dopis</option>
+        </select>
+
+        <label for="dopisMnozstvi">Mnozstvi:</label>
+        <input id="dopisMnozstvi" type="number" min="1" value="1" required>
+
+        <button id="submitDopis" type="button">Pridat dopis</button>
+    </form>
+
+    <h2>Pridat balik</h2>
+    <form id="balikForm">
+        <label for="balikNazev">Nazev:</label>
+        <input id="balikNazev" type="text" required>
+
+        <label for="balikSirka">Sirka (cm):</label>
+        <input id="balikSirka" type="number" min="1" required>
+
+        <label for="balikVyska">Vyska (cm):</label>
+        <input id="balikVyska" type="number" min="1" required>
+
+        <label for="balikHloubka">Hloubka (cm):</label>
+        <input id="balikHloubka" type="number" min="1" required>
+
+        <label for="balikVaha">Vaha (kg):</label>
+        <input id="balikVaha" type="number" min="1" required>
+
+        <label for="balikMnozstvi">Mnozstvi:</label>
+        <input id="balikMnozstvi" type="number" min="1" value="1" required>
+
+        <label>
+            <input id="balikKrehky" type="checkbox">
+            Krehky
+        </label>
+
+        <button id="submitBalik" type="button">Pridat balik</button>
+    </form>
+
+    <h2>Vysledek</h2>
+    <p id="zprava"></p>
+    <div id="vypis"></div>
+
     <script type="module" src="script.js"></script>
-    <script type="module" src="data.js"></script>
 </body>
 </html>
