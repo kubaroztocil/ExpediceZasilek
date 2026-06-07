@@ -16,7 +16,9 @@ class Vozidlo {
     // pridani zasilky do vozidla, kontrola objemu
     pridatZasilku(z: Zasilka): { ok: boolean; reason?: string } {
         let objm = 0;
-        if (z instanceof Balik) objm = z.objem;
+        if (z instanceof Balik) {
+        objm = z.objem * z.mnozstvi; // Zohlednění celkového množství
+        }
         // dopisy nemaji objem
 
         if (this.zaplnenyObjem + objm > this.maxObjem) {
@@ -56,7 +58,9 @@ class Vozidlo {
         }
         const zasilka = this.zasilky[index];
         let objm = 0;
-        if (zasilka instanceof Balik) objm = zasilka.objem;
+        if (zasilka instanceof Balik) {
+        objm = zasilka.objem * zasilka.mnozstvi; // Zohlednění celkového množství
+}
         this.zasilky.splice(index, 1);
         this.zaplnenyObjem -= objm;
         return { ok: true, zasilka };
@@ -205,7 +209,8 @@ function pridatDopis(nazev: string, druh: 'dopis' | 'doporuceny', mnozstvi: numb
     const typ = druh ==  'dopis' ? 'dopis' : 'doporuceny';
     const pol = menu.find(m => m.typ == typ);
     if (!pol) throw new Error('Položka v menu nenalezena');
-    return new Dopis(pol.id, nazev, pol.cena, mnozstvi);
+    const unikatniId = Math.floor(Math.random() * 100000); 
+    return new Dopis(unikatniId, nazev, pol.cena, mnozstvi);
 }
 
 // funkce pridani baliku
@@ -227,27 +232,75 @@ const mojeVozidlo = new Vozidlo(configVozidlo.id, configVozidlo.nazev, configVoz
 const dopisForm = document.getElementById('dopisForm') as HTMLFormElement;
 const balikForm = document.getElementById('balikForm') as HTMLFormElement;
 const zprava = document.getElementById('zprava') as HTMLParagraphElement;
+const zpravaBox = document.getElementById('zprava-box') as HTMLDivElement;
 const vypis = document.getElementById('vypis') as HTMLDivElement;
 
-function vykresliVozidlo(): void { //tabulka u vozidla
-    let html = '';
-    html += '<p><b>Vozidlo:</b> ' + mojeVozidlo.nazev + '</p>';
-    html += '<p><b>Pocet kusu:</b> ' + mojeVozidlo.getPocetKusu() + '</p>';
-    html += '<p><b>Obsazeni:</b> ' + mojeVozidlo.getProcenta() + ' %</p>';
-    html += '<p><b>Cena celkem:</b> ' + mojeVozidlo.getCelkovaCena() + ' Kc</p>';
+// Pomocná funkce pro hezké zobrazení hlášek (zelená/červená/modrá)
+function zobrazHlasku(text: string, typ: 'success' | 'error' | 'info'): void {
+    zprava.textContent = text;
+    zpravaBox.className = "w3-panel w3-leftbar w3-padding "; // reset tříd
 
-    if (mojeVozidlo.zasilky.length === 0) {
-        html += '<p>Zatim nejsou pridane zadne zasilky.</p>';
+    if (typ === 'success') {
+        zpravaBox.classList.add("w3-border-green", "w3-pale-green");
+    } else if (typ === 'error') {
+        zpravaBox.classList.add("w3-border-red", "w3-pale-red");
     } else {
-        html += '<ul>';
+        zpravaBox.classList.add("w3-border-blue", "w3-pale-blue");
+    }
+}
+
+function vykresliVozidlo(): void {
+    let html = '';
+    const procenta = mojeVozidlo.getProcenta();
+
+    // Určení barvy grafu podle zaplnění dodávky
+    let barvaGrafu = 'w3-green';
+    if (procenta > 75) barvaGrafu = 'w3-orange';
+    if (procenta > 90) barvaGrafu = 'w3-red';
+
+    // Výpis detailů dodávky
+    html += '<div class="w3-container w3-light-grey w3-padding w3-round w3-margin-bottom">';
+    html += '<h4><b>Název vozidla:</b> ' + mojeVozidlo.nazev + '</h4>';
+    html += '<p><b>Počet naložených kusů celkem:</b> ' + mojeVozidlo.getPocetKusu() + ' ks</p>';
+    html += '<p><b>Celková cena dopravy:</b> <span class="w3-tag w3-large w3-amber w3-round"><b>' + mojeVozidlo.getCelkovaCena() + ' Kč</b></span></p>';
+    html += '<p><b>Zaplněný objem:</b> ' + mojeVozidlo.zaplnenyObjem + ' / ' + mojeVozidlo.maxObjem + ' cm³ (' + procenta + ' %)</p>';
+
+    // W3.CSS Vizuální progress bar kapacity
+    html += '<div class="w3-light-grey w3-round-xlarge w3-border">';
+    html += '<div class="w3-container w3-round-xlarge w3-center ' + barvaGrafu + '" style="width:' + Math.min(procenta, 100) + '%">' + procenta + '%</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Výpis jednotlivých balíků a dopisů
+    html += '<h4> Seznam položek v nákladovém prostoru:</h4>';
+    if (mojeVozidlo.zasilky.length === 0) {
+        html += '<p class="w3-text-grey">Vozidlo je prázdné, zatím nebylo nic naloženo.</p>';
+    } else {
+        html += '<ul class="w3-ul w3-border w3-white w3-round">';
         for (let i = 0; i < mojeVozidlo.zasilky.length; i++) {
-            html += '<li>' + mojeVozidlo.zasilky[i].getInfo() + '</li>';
+            const z = mojeVozidlo.zasilky[i];
+            html += '<li class="zasilka-item">';
+            html += '<span>' + z.getInfo() + '</span>';
+            // Tlačítko pro odebrání s voláním globální funkce
+            html += '<button class="w3-button w3-red w3-round w3-small" onclick="odebratZasilkuUI(' + z.id + ')">Odebrat</button>';
+            html += '</li>';
         }
         html += '</ul>';
     }
 
     vypis.innerHTML = html;
 }
+// Zpřístupnění funkce odebírání pro HTML inline onclick
+(window as any).odebratZasilkuUI = function (id: number) {
+    const vysledek = mojeVozidlo.odebratZasilku(id);
+    if (vysledek.ok) {
+        zobrazHlasku('Zásilka byla úspěšně vyložena z vozidla.', 'success');
+        vykresliVozidlo();
+    } else {
+        zobrazHlasku('Chyba: ' + vysledek.reason, 'error');
+    }
+};
+
 //pro dopis
 const submitDopis = document.getElementById('submitDopis') as HTMLButtonElement;
 submitDopis.onclick = function (e) {
@@ -255,27 +308,32 @@ submitDopis.onclick = function (e) {
     const druh = (document.getElementById('dopisDruh') as HTMLSelectElement).value as 'dopis' | 'doporuceny';
     const mnozstvi = Number((document.getElementById('dopisMnozstvi') as HTMLInputElement).value);
 
+    if (nazev.trim() === "") {
+    zobrazHlasku("Chyba: Zadejte prosím název dopisu.", "error");
+    return;
+    }
     try {
         const novyDopis = pridatDopis(nazev, druh, mnozstvi);
         const vysledek = mojeVozidlo.pridatZasilku(novyDopis);
 
         if (vysledek.ok) {
-            zprava.textContent = 'Dopis byl uspesne pridany.';
+            zobrazHlasku('Dopis byl úspěšně naložen do vozidla.', 'success');
             dopisForm.reset();
             (document.getElementById('dopisMnozstvi') as HTMLInputElement).value = '1';
             vykresliVozidlo();
 
         } else {
-            zprava.textContent = 'Chyba: ' + vysledek.reason;
+            zobrazHlasku('Chyba: ' + vysledek.reason, 'error');
         }
     } catch (err) {
         const text = err instanceof Error ? err.message : 'Neznama chyba';
-        zprava.textContent = 'Chyba: ' + text;
+        zobrazHlasku('Chyba: ' + text, 'error');
     }
 };
 //pro balik
 const submitBalik = document.getElementById('submitBalik') as HTMLButtonElement;
 submitBalik.onclick = function (e) {
+    
     const nazev = (document.getElementById('balikNazev') as HTMLInputElement).value;
     const sirka = Number((document.getElementById('balikSirka') as HTMLInputElement).value);
     const vyska = Number((document.getElementById('balikVyska') as HTMLInputElement).value);
@@ -285,6 +343,14 @@ submitBalik.onclick = function (e) {
     const krehky = (document.getElementById('balikKrehky') as HTMLInputElement).checked;
     const objem = Math.round(sirka * vyska * hloubka);
     const limitCenik = menu.find(function (polozka) { return polozka.typ === 'balik-nadmerny'; });
+    if (nazev.trim() === "") {
+    zobrazHlasku("Chyba: Zadejte prosím název balíku.", "error");
+    return;
+    }
+    if (sirka <= 0 || vyska <= 0 || hloubka <= 0 || vaha <= 0) {
+    zobrazHlasku("Chyba: Rozměry a váha musí být kladná čísla.", "error");
+    return;
+    }
 
     if (vaha > maxLimity.maxVahaBalik) {
         zprava.textContent = 'Chyba: Balik ma moc velkou vahu. Maximum je ' + maxLimity.maxVahaBalik + ' kg.';
@@ -316,12 +382,12 @@ submitBalik.onclick = function (e) {
 
         const vysledek = mojeVozidlo.pridatZasilku(novyBalik);
         if (vysledek.ok) {
-            zprava.textContent = 'Balik byl uspesne pridany.';
+            zobrazHlasku('Balík byl úspěšně naložen do vozidla.', 'success');
             balikForm.reset();
             (document.getElementById('balikMnozstvi') as HTMLInputElement).value = '1';
             vykresliVozidlo();
         } else {
-            zprava.textContent = 'Chyba: ' + vysledek.reason;
+            zobrazHlasku('Chyba: ' + vysledek.reason, 'error');
         }
     } catch (err) {
         const text = err instanceof Error ? err.message : 'Neznama chyba';
