@@ -1,37 +1,16 @@
+/* font*/
 body {
-	font-family: Arial, sans-serif;
-	max-width: 700px;
-	margin: 20px auto;
-	padding: 0 10px;
+    font-family: Arial, sans-serif;
 }
 
-h1 {
-	margin-bottom: 20px;
+/* styl položky */
+.zasilka-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
+/* Ochrana před zrušením designu u W3.CSS*/
 form {
-	border: 1px solid #ccc;
-	padding: 10px;
-	margin-bottom: 20px;
-}
-
-label {
-	display: block;
-	margin-top: 8px;
-}
-
-input,
-select,
-button {
-	margin-top: 4px;
-}
-
-#zprava {
-	font-weight: bold;
-}
-
-#vypis {
-	border: 1px solid #ddd;
-	padding: 10px;
-	min-height: 40px;
+    border: none !important;
 }
