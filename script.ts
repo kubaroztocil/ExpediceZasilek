@@ -17,20 +17,20 @@ class Vozidlo {
     pridatZasilku(z: Zasilka): { ok: boolean; reason?: string } {
         let objm = 0;
         if (z instanceof Balik) {
-        objm = z.objem * z.mnozstvi; // Zohlednění celkového množství
+        objm = z.objem * z.mnozstvi; // objem krat mnozstvi pro baliky
         }
         // dopisy nemaji objem
 
-        if (this.zaplnenyObjem + objm > this.maxObjem) {
+        if (this.zaplnenyObjem + objm > this.maxObjem) { // kontrola, zda se zasilka vejde do vozidla
             return { ok: false, reason: 'Nedostatek volného objemu ve vozidle' };
         }
 
-        this.zasilky.push(z);
+        this.zasilky.push(z); // prida do seznamu zasilek
         this.zaplnenyObjem += objm;
         return { ok: true };
     }
 
-    zbyvajiciObjem(): number {
+    zbyvajiciObjem(): number { //pocita zbytek objemu ve vozidle
         return Math.max(0, this.maxObjem - this.zaplnenyObjem);
     }
 
@@ -77,7 +77,7 @@ class Vozidlo {
         return `${this.nazev} (${this.getPocetKusu()} kusů, ${this.getProcenta()}% obsazeno, cena: ${this.getCelkovaCena()} Kč)`;
     }
 }
-// Základní třída společných vlastností
+// Základní třída společných vlastností pro zasilky
 abstract class Zasilka {
     id: number;
     typ: string;
@@ -265,7 +265,7 @@ function vykresliVozidlo(): void {
     html += '<p><b>Celková cena dopravy:</b> <span class="w3-tag w3-large w3-amber w3-round"><b>' + mojeVozidlo.getCelkovaCena() + ' Kč</b></span></p>';
     html += '<p><b>Zaplněný objem:</b> ' + mojeVozidlo.zaplnenyObjem + ' / ' + mojeVozidlo.maxObjem + ' cm³ (' + procenta + ' %)</p>';
 
-    // W3.CSS Vizuální progress bar kapacity
+    // W3.CSS progress bar kapacity
     html += '<div class="w3-light-grey w3-round-xlarge w3-border">';
     html += '<div class="w3-container w3-round-xlarge w3-center ' + barvaGrafu + '" style="width:' + Math.min(procenta, 100) + '%">' + procenta + '%</div>';
     html += '</div>';
@@ -343,6 +343,7 @@ submitBalik.onclick = function (e) {
     const krehky = (document.getElementById('balikKrehky') as HTMLInputElement).checked;
     const objem = Math.round(sirka * vyska * hloubka);
     const limitCenik = menu.find(function (polozka) { return polozka.typ === 'balik-nadmerny'; });
+    //chybove hlasky, kontrola vstupu a limitu
     if (nazev.trim() === "") {
     zobrazHlasku("Chyba: Zadejte prosím název balíku.", "error");
     return;
@@ -371,7 +372,7 @@ submitBalik.onclick = function (e) {
         zprava.textContent = 'Chyba: Balik je nad limit ceniku. Maximalni objem je ' + limitCenik.maxObjem + ' cm3.';
         return;
     }
-
+    // Vytvoření balíku a přidání do vozidla
     try {
         const novyBalik = pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehky);
 
@@ -394,5 +395,5 @@ submitBalik.onclick = function (e) {
         zprava.textContent = 'Chyba: ' + text;
     }
 };
-
+// Inicializace zobrazení vozidla
 vykresliVozidlo();

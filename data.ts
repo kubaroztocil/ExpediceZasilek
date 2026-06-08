@@ -1,4 +1,4 @@
-interface PolozkaMenu {
+interface PolozkaMenu { //konfig dopis a balik
     id: number;
     typ: 'dopis' | 'doporuceny' | 'balik-maly' | 'balik-stredni' | 'balik-velky' | 'balik-nadmerny';
     nazev: string;
