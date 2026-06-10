@@ -27,6 +27,6 @@ interface vozidloConfig {
     maxObjem: number; // v cm3
 }
 
-export const vozidla: vozidloConfig[] = [
+export const vozidla: vozidloConfig[] = [ // vozidla
     { id: 1, nazev: 'Dodávka', maxObjem: 1000000 },
 ];
