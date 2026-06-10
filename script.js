@@ -15,9 +15,8 @@ class Vozidlo {
     pridatZasilku(z) {
         let objm = 0;
         if (z instanceof Balik) {
-            objm = z.objem * z.mnozstvi; // objem krat mnozstvi pro baliky
+            objm = z.objem * z.mnozstvi; // objem krat mnozstvi pro baliky (pro dopis objem 0)
         }
-        // dopisy nemaji objem
         if (this.zaplnenyObjem + objm > this.maxObjem) { // kontrola, zda se zasilka vejde do vozidla
             return { ok: false, reason: 'Nedostatek volného objemu ve vozidle' };
         }
@@ -45,17 +44,17 @@ class Vozidlo {
     // Odebrání zásilky podle ID
     odebratZasilku(id) {
         const index = this.zasilky.findIndex(z => z.id === id);
-        if (index === -1) {
+        if (index === -1) { // zásilka nenalezena
             return { ok: false, reason: 'Zásilka nenalezena' };
         }
-        const zasilka = this.zasilky[index];
+        const zasilka = this.zasilky[index]; // získáme zásilku pro výpočet objemu
         let objm = 0;
         if (zasilka instanceof Balik) {
             objm = zasilka.objem * zasilka.mnozstvi; // Zohlednění celkového množství
         }
-        this.zasilky.splice(index, 1);
-        this.zaplnenyObjem -= objm;
-        return { ok: true, zasilka };
+        this.zasilky.splice(index, 1); // odstraní zásilku ze seznamu
+        this.zaplnenyObjem -= objm; // aktualizace zaplněného objemu
+        return { ok: true, zasilka }; // vrací odebranou zásilku
     }
     // Vyprázdnit vozidlo
     vyprazdnit() {
@@ -64,7 +63,7 @@ class Vozidlo {
     }
     // Info o vozidlu
     getInfo() {
-        return `${this.nazev} (${this.getPocetKusu()} kusů, ${this.getProcenta()}% obsazeno, cena: ${this.getCelkovaCena()} Kč)`;
+        return `${this.nazev} (${this.getPocetKusu()} kusů, ${this.getProcenta()}% obsazeno, cena: ${this.getCelkovaCena()} Kč)`; // zobrazení informací o vozidle
     }
 }
 // Základní třída společných vlastností pro zasilky
@@ -143,7 +142,7 @@ class Balik extends Zasilka {
         const stredni = menu.find(m => m.typ === 'balik-stredni');
         const velky = menu.find(m => m.typ === 'balik-velky');
         const nadmerny = menu.find(m => m.typ === 'balik-nadmerny');
-        const maxVahaMaly = maly?.maxVaha ?? Infinity;
+        const maxVahaMaly = maly?.maxVaha ?? Infinity; // pokud není definováno, nekonečno
         const maxVahaStredni = stredni?.maxVaha ?? Infinity;
         const maxVahaVelky = velky?.maxVaha ?? Infinity;
         const maxVahaNad = nadmerny?.maxVaha ?? Infinity;
@@ -162,7 +161,7 @@ class Balik extends Zasilka {
         const maxObjemVelky = velky?.maxObjem ?? Infinity;
         const maxObjemNad = nadmerny?.maxObjem ?? Infinity;
         if (this.objem > maxObjemNad)
-            return 'prilis-velky';
+            return 'prilis-velky'; // pokud objem překročí i nadměrný, je příliš velký
         if (this.objem > maxObjemVelky)
             return 'balik-nadmerny';
         if (this.objem > maxObjemStredni)
@@ -188,7 +187,7 @@ function pridatDopis(nazev, druh, mnozstvi) {
     const pol = menu.find(m => m.typ == typ);
     if (!pol)
         throw new Error('Položka v menu nenalezena');
-    const unikatniId = Math.floor(Math.random() * 100000);
+    const unikatniId = Math.floor(Math.random() * 100000); // generování unikátního ID pro dopis
     return new Dopis(unikatniId, nazev, pol.cena, mnozstvi);
 }
 // funkce pridani baliku
@@ -196,7 +195,7 @@ function pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehka = fals
     const id = 100 + Math.floor(Math.random() * 900);
     // před vytvořením instance zkontrolujeme globální limity
     const objem = Math.round(sirka * vyska * hloubka);
-    if (vaha > maxLimity.maxVahaBalik || objem > maxLimity.maxObjemBalik) {
+    if (vaha > maxLimity.maxVahaBalik || objem > maxLimity.maxObjemBalik) { // pokud balík překračuje globální limity, nevytvoří se a zobrazí se varování
         console.warn('Balík překračuje globální limity - nebude vytvořen.');
         return null;
     }
@@ -205,40 +204,41 @@ function pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehka = fals
 //propojeni s HTML
 const configVozidlo = vozidla[0];
 const mojeVozidlo = new Vozidlo(configVozidlo.id, configVozidlo.nazev, configVozidlo.maxObjem);
+// HTML elementy
 const dopisForm = document.getElementById('dopisForm');
 const balikForm = document.getElementById('balikForm');
 const zprava = document.getElementById('zprava');
 const zpravaBox = document.getElementById('zprava-box');
 const vypis = document.getElementById('vypis');
-// Pomocná funkce pro hezké zobrazení hlášek (zelená/červená/modrá)
+// Pomocná funkce pro zobrazení hlášek (zelená/červená/modrá)
 function zobrazHlasku(text, typ) {
     zprava.textContent = text;
     zpravaBox.className = "w3-panel w3-leftbar w3-padding "; // reset tříd
-    if (typ === 'success') {
+    if (typ === 'success') { // zelená pro úspěch
         zpravaBox.classList.add("w3-border-green", "w3-pale-green");
     }
-    else if (typ === 'error') {
+    else if (typ === 'error') { // červená pro chybu
         zpravaBox.classList.add("w3-border-red", "w3-pale-red");
     }
-    else {
+    else { // modrá pro info
         zpravaBox.classList.add("w3-border-blue", "w3-pale-blue");
     }
 }
 function vykresliVozidlo() {
     let html = '';
-    const procenta = mojeVozidlo.getProcenta();
+    const procenta = mojeVozidlo.getProcenta(); // procenta zaplnění vozidla pro grafické zobrazení
     // Určení barvy grafu podle zaplnění dodávky
     let barvaGrafu = 'w3-green';
     if (procenta > 75)
-        barvaGrafu = 'w3-orange';
+        barvaGrafu = 'w3-orange'; // oranžová pro více než 75%
     if (procenta > 90)
-        barvaGrafu = 'w3-red';
+        barvaGrafu = 'w3-red'; // červená pro více než 90%
     // Výpis detailů dodávky
-    html += '<div class="w3-container w3-light-grey w3-padding w3-round w3-margin-bottom">';
-    html += '<h4><b>Název vozidla:</b> ' + mojeVozidlo.nazev + '</h4>';
-    html += '<p><b>Počet naložených kusů celkem:</b> ' + mojeVozidlo.getPocetKusu() + ' ks</p>';
-    html += '<p><b>Celková cena dopravy:</b> <span class="w3-tag w3-large w3-amber w3-round"><b>' + mojeVozidlo.getCelkovaCena() + ' Kč</b></span></p>';
-    html += '<p><b>Zaplněný objem:</b> ' + mojeVozidlo.zaplnenyObjem + ' / ' + mojeVozidlo.maxObjem + ' cm³ (' + procenta + ' %)</p>';
+    html += '<div class="w3-container w3-light-grey w3-padding w3-round w3-margin-bottom">'; // kontejner pro informace o vozidle
+    html += '<h4><b>Název vozidla:</b> ' + mojeVozidlo.nazev + '</h4>'; // název vozidla
+    html += '<p><b>Počet naložených kusů celkem:</b> ' + mojeVozidlo.getPocetKusu() + ' ks</p>'; // počet kusů
+    html += '<p><b>Celková cena dopravy:</b> <span class="w3-tag w3-large w3-amber w3-round"><b>' + mojeVozidlo.getCelkovaCena() + ' Kč</b></span></p>'; // celkova cena označena žlutou značkou
+    html += '<p><b>Zaplněný objem:</b> ' + mojeVozidlo.zaplnenyObjem + ' / ' + mojeVozidlo.maxObjem + ' cm³ (' + procenta + ' %)</p>'; // zobrazení zaplněného objemu a procenta
     // W3.CSS progress bar kapacity
     html += '<div class="w3-light-grey w3-round-xlarge w3-border">';
     html += '<div class="w3-container w3-round-xlarge w3-center ' + barvaGrafu + '" style="width:' + Math.min(procenta, 100) + '%">' + procenta + '%</div>';
@@ -246,32 +246,32 @@ function vykresliVozidlo() {
     html += '</div>';
     // Výpis jednotlivých balíků a dopisů
     html += '<h4> Seznam položek v nákladovém prostoru:</h4>';
-    if (mojeVozidlo.zasilky.length === 0) {
+    if (mojeVozidlo.zasilky.length === 0) { // pokud není nic naloženo, zobrazí se hláška
         html += '<p class="w3-text-grey">Vozidlo je prázdné, zatím nebylo nic naloženo.</p>';
     }
     else {
-        html += '<ul class="w3-ul w3-border w3-white w3-round">';
-        for (let i = 0; i < mojeVozidlo.zasilky.length; i++) {
+        html += '<ul class="w3-ul w3-border w3-white w3-round">'; // seznam zasilek
+        for (let i = 0; i < mojeVozidlo.zasilky.length; i++) { // pro každou zásilku vytvoří položku v seznamu
             const z = mojeVozidlo.zasilky[i];
-            html += '<li class="zasilka-item">';
-            html += '<span>' + z.getInfo() + '</span>';
+            html += '<li class="zasilka-item">'; // položka zásilky
+            html += '<span>' + z.getInfo() + '</span>'; // zobrazení informací o zásilce
             // Tlačítko pro odebrání s voláním globální funkce
-            html += '<button class="w3-button w3-red w3-round w3-small" onclick="odebratZasilkuUI(' + z.id + ')">Odebrat</button>';
+            html += '<button class="w3-button w3-red w3-round w3-small" onclick="odebratZasilkuUI(' + z.id + ')">Odebrat</button>'; // tlačítko pro odebrání zásilky
             html += '</li>';
         }
-        html += '</ul>';
+        html += '</ul>'; // konec seznamu zasilek
     }
-    vypis.innerHTML = html;
+    vypis.innerHTML = html; // aktualizace HTML s informacemi o vozidle a zásilkách
 }
 // Zpřístupnění funkce odebírání pro HTML inline onclick
 window.odebratZasilkuUI = function (id) {
     const vysledek = mojeVozidlo.odebratZasilku(id);
     if (vysledek.ok) {
-        zobrazHlasku('Zásilka byla úspěšně vyložena z vozidla.', 'success');
+        zobrazHlasku('Zásilka byla úspěšně vyložena z vozidla.', 'success'); // zobrazení úspěšné hlášky
         vykresliVozidlo();
     }
     else {
-        zobrazHlasku('Chyba: ' + vysledek.reason, 'error');
+        zobrazHlasku('Chyba: ' + vysledek.reason, 'error'); // zobrazení chybové hlášky
     }
 };
 //pro dopis
@@ -279,25 +279,25 @@ const submitDopis = document.getElementById('submitDopis');
 submitDopis.onclick = function (e) {
     const nazev = document.getElementById('dopisNazev').value;
     const druh = document.getElementById('dopisDruh').value;
-    const mnozstvi = Number(document.getElementById('dopisMnozstvi').value);
-    if (nazev.trim() === "") {
+    const mnozstvi = Number(document.getElementById('dopisMnozstvi').value); // převod množství na číslo
+    if (nazev.trim() === "") { // kontrola, zda je název dopisu zadán
         zobrazHlasku("Chyba: Zadejte prosím název dopisu.", "error");
         return;
     }
-    try {
+    try { // vytvoření dopisu a přidání do vozidla
         const novyDopis = pridatDopis(nazev, druh, mnozstvi);
         const vysledek = mojeVozidlo.pridatZasilku(novyDopis);
-        if (vysledek.ok) {
+        if (vysledek.ok) { // pokud se dopis úspěšně přidal, zobrazí se hláška a aktualizuje zobrazení vozidla
             zobrazHlasku('Dopis byl úspěšně naložen do vozidla.', 'success');
             dopisForm.reset();
-            document.getElementById('dopisMnozstvi').value = '1';
+            document.getElementById('dopisMnozstvi').value = '1'; // reset množství na 1 po úspěšném přidání
             vykresliVozidlo();
         }
         else {
-            zobrazHlasku('Chyba: ' + vysledek.reason, 'error');
+            zobrazHlasku('Chyba: ' + vysledek.reason, 'error'); // pokud se dopis nepřidal, zobrazí se chybová hláška s důvodem
         }
     }
-    catch (err) {
+    catch (err) { // pokud dojde k chybě při vytváření dopisu, zobrazí se chybová hláška s textem chyby
         const text = err instanceof Error ? err.message : 'Neznama chyba';
         zobrazHlasku('Chyba: ' + text, 'error');
     }
@@ -313,17 +313,17 @@ submitBalik.onclick = function (e) {
     const mnozstvi = Number(document.getElementById('balikMnozstvi').value);
     const krehky = document.getElementById('balikKrehky').checked;
     const objem = Math.round(sirka * vyska * hloubka);
-    const limitCenik = menu.find(function (polozka) { return polozka.typ === 'balik-nadmerny'; });
+    const limitCenik = menu.find(function (polozka) { return polozka.typ === 'balik-nadmerny'; }); // získání limitů pro nadměrný balík z menu
     //chybove hlasky, kontrola vstupu a limitu
     if (nazev.trim() === "") {
-        zobrazHlasku("Chyba: Zadejte prosím název balíku.", "error");
+        zobrazHlasku("Chyba: Zadejte prosím název balíku.", "error"); // kontrola, zda je název balíku zadán
         return;
     }
-    if (sirka <= 0 || vyska <= 0 || hloubka <= 0 || vaha <= 0) {
+    if (sirka <= 0 || vyska <= 0 || hloubka <= 0 || vaha <= 0) { // kontrola, zda jsou rozměry a váha kladná čísla
         zobrazHlasku("Chyba: Rozměry a váha musí být kladná čísla.", "error");
         return;
     }
-    if (vaha > maxLimity.maxVahaBalik) {
+    if (vaha > maxLimity.maxVahaBalik) { // kontrola, zda váha nepřekračuje globální limit pro balík
         zprava.textContent = 'Chyba: Balik ma moc velkou vahu. Maximum je ' + maxLimity.maxVahaBalik + ' kg.';
         return;
     }
@@ -342,11 +342,11 @@ submitBalik.onclick = function (e) {
     // Vytvoření balíku a přidání do vozidla
     try {
         const novyBalik = pridatBalik(nazev, sirka, vyska, hloubka, vaha, mnozstvi, krehky);
-        if (novyBalik === null) {
+        if (novyBalik === null) { // pokud balík překračuje globální limity, zobrazí se chybová hláška a balík se nevytvoří
             zprava.textContent = 'Balik je moc velky nebo tezky.';
             return;
         }
-        const vysledek = mojeVozidlo.pridatZasilku(novyBalik);
+        const vysledek = mojeVozidlo.pridatZasilku(novyBalik); // pokus o přidání balíku do vozidla, kontrola kapacity a zobrazení hlášky podle výsledku
         if (vysledek.ok) {
             zobrazHlasku('Balík byl úspěšně naložen do vozidla.', 'success');
             balikForm.reset();
@@ -358,9 +358,9 @@ submitBalik.onclick = function (e) {
         }
     }
     catch (err) {
-        const text = err instanceof Error ? err.message : 'Neznama chyba';
-        zprava.textContent = 'Chyba: ' + text;
+        const text = err instanceof Error ? err.message : 'Neznama chyba'; // pokud dojde k chybě při vytváření balíku, zobrazí se chybová hláška s textem chyby
+        zobrazHlasku('Chyba: ' + text, 'error');
     }
 };
-// Inicializace zobrazení vozidla
+// Inicializace zobrazení vozidla po načtení stránky
 vykresliVozidlo();
