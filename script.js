@@ -375,12 +375,12 @@ submitBalik.onclick = function (e) {
     const objemJedenKus = Math.round(sirka * vyska * hloubka);
     const celkovyObjem = objemJedenKus * mnozstvi;
     const celkovaVaha = vaha * mnozstvi;
-    // 1. Kontrola celkové váhy všech kusů
+    // kontrola celkové váhy všech kusů
     if (celkovaVaha > maxLimity.maxVahaBalik) {
         zobrazHlasku('Chyba: Celková váha nákladu (' + celkovaVaha + ' kg) překračuje maximum vozidla ' + maxLimity.maxVahaBalik + ' kg.', 'error');
         return;
     }
-    // 2. Kontrola celkového objemu všech kusů
+    // kontrola celkového objemu všech kusů
     if (celkovyObjem > maxLimity.maxObjemBalik) {
         zobrazHlasku('Chyba: Celkový objem nákladu (' + celkovyObjem + ' cm³) překračuje maximum vozidla ' + maxLimity.maxObjemBalik + ' cm³.', 'error');
         return;

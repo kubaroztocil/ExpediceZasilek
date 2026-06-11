@@ -106,7 +106,7 @@ abstract class Zasilka {
 
 // Dopis
 class Dopis extends Zasilka {
-    constructor(id: number, typ:string, nazev: string, cena: number, mnozstvi = 1) { // konstruktor pro dopis, volá konstruktor základní třídy s typem 'dopis'
+    constructor(id: number, typ:string, nazev: string, cena: number, mnozstvi = 1) { // konstruktor pro dopis
         super(id, typ, nazev, cena, mnozstvi);
     }
 
@@ -248,6 +248,7 @@ function pridatBalik(nazev: string, sirka: number, vyska: number, hloubka: numbe
 //propojeni s HTML
 const configVozidlo = vozidla[0];
 const mojeVozidlo = new Vozidlo(configVozidlo.id, configVozidlo.nazev, configVozidlo.maxObjem);
+
 // HTML elementy
 const dopisForm = document.getElementById('dopisForm') as HTMLFormElement; 
 const balikForm = document.getElementById('balikForm') as HTMLFormElement;
@@ -412,13 +413,14 @@ submitBalik.onclick = function (e) { // získání hodnot z formuláře pro bal�
     const objemJedenKus = Math.round(sirka * vyska * hloubka);
     const celkovyObjem = objemJedenKus * mnozstvi;
     const celkovaVaha = vaha * mnozstvi;
-// 1. Kontrola celkové váhy všech kusů
+
+// kontrola celkové váhy všech kusů
     if (celkovaVaha > maxLimity.maxVahaBalik) { 
     zobrazHlasku('Chyba: Celková váha nákladu (' + celkovaVaha + ' kg) překračuje maximum vozidla ' + maxLimity.maxVahaBalik + ' kg.', 'error');
     return;
     }
 
-// 2. Kontrola celkového objemu všech kusů
+// kontrola celkového objemu všech kusů
     if (celkovyObjem > maxLimity.maxObjemBalik) {
     zobrazHlasku('Chyba: Celkový objem nákladu (' + celkovyObjem + ' cm³) překračuje maximum vozidla ' + maxLimity.maxObjemBalik + ' cm³.', 'error');
     return;
