@@ -150,7 +150,7 @@ class Balik extends Zasilka {
         const stredni = menu.find(m => m.typ === 'balik-stredni');
         const velky = menu.find(m => m.typ === 'balik-velky');
         const nadmerny = menu.find(m => m.typ === 'balik-nadmerny');
-        const maxVahaMaly = maly?.maxVaha ?? Infinity;
+        const maxVahaMaly = maly?.maxVaha ?? Infinity; // pokud není definováno, použijeme Infinity
         const maxVahaStredni = stredni?.maxVaha ?? Infinity;
         const maxVahaVelky = velky?.maxVaha ?? Infinity;
         const maxVahaNad = nadmerny?.maxVaha ?? Infinity;
@@ -278,8 +278,8 @@ function vykresliVozidlo() {
     else {
         // Použití W3.CSS card a hoverable seznamu
         html += '<ul class="w3-ul w3-card-4 w3-white w3-round w3-hoverable" style="overflow: hidden;">';
-        for (let i = 0; i < mojeVozidlo.zasilky.length; i++) {
-            const z = mojeVozidlo.zasilky[i];
+        for (let i = 0; i < mojeVozidlo.zasilky.length; i++) { // procházení zásilek ve vozidle
+            const z = mojeVozidlo.zasilky[i]; // získání zásilky pro zobrazení informací
             // Řádek seznamu využívající w3-bar pro rozložení (text vlevo, tlačítko vpravo)
             html += '<li class="w3-bar w3-border-bottom" style="padding: 12px 16px;">';
             // Tlačítko pro odebrání (zarovnáno doprava pomocí w3-right)
